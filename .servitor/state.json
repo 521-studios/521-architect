@@ -1,0 +1,31 @@
+{
+  "repo": "521-architect",
+  "agent": "Abadar",
+  "role": "system_architect",
+  "last_updated": "2026-08-14",
+  "docs_status": {
+    "system_overview": "complete",
+    "data_pipeline": "complete",
+    "aws_infrastructure": "complete",
+    "service_dependencies": "complete",
+    "extraction_roadmap": "complete",
+    "engineering_standards": "complete"
+  },
+  "goals": {
+    "encounter-builder-usable": {
+      "status": "staging-complete",
+      "remaining": "prod cut-over (bead pmib, awaiting Devon's prod authorization)",
+      "v2_design": "shipped (epic 0ybu); party-treasure budgeting shipped (epic ncnq)"
+    }
+  },
+  "pending": [
+    "cross-reference existing arch docs from other repos",
+    "ADR (architecture decision record) format and first entries",
+    "encounter-builder prod cut-over (bead pmib) — Devon-gated"
+  ],
+  "fleet_agents": {
+    "Iomedae": "fleet_commander",
+    "Nethys": "pfsrd2-data-api",
+    "Abadar": "521-architect"
+  }
+}
