@@ -23,6 +23,11 @@ ContentRef :=
 Mod := { kind, id, params, v, engine_version? }
 ```
 
+**Variants are exclusive.** `modifications` without `base` is invalid, and
+so is `base` without `json`. Writers must not produce either. APIs that check
+ref structure should reject them; that is a structural check on the wrapper,
+not validation of elements.
+
 ### The wrapper is closed
 
 The wrapper fields are exactly `game_id`, `version`, `base`, `modifications`,
