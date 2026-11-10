@@ -24,9 +24,8 @@ Mod := { kind, id, params, v, engine_version? }
 ```
 
 **Variants are exclusive.** `modifications` without `base` is invalid, and
-so is `base` without `json`. Writers must not produce either. APIs that check
-ref structure should reject them; that is a structural check on the wrapper,
-not validation of elements.
+so is `base` without `json`. Writers must not produce either. An API may reject them with a structural check on the wrapper. That is
+optional, not required: today's APIs reject only an empty ref.
 
 ### The wrapper is closed
 
