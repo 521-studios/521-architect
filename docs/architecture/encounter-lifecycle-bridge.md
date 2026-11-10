@@ -1,6 +1,6 @@
 # Encounter Lifecycle and the lets-roll Combat Bridge
 
-Status: ACCEPTED (Devon, 2026-11-10). The conflict rule is a default that Devon has not yet confirmed.
+Status: ACCEPTED (Devon, 2026-11-10), including the conflict rule.
 Beads: epic `bd_521Studios-we5k.2` (under M3). lets-roll prerequisite: `lets-roll-jlm`.
 
 This note answers how Encounter Builder's progress state stays consistent with lets-roll's live combat state.
@@ -42,7 +42,7 @@ The beads must still settle these details:
 
 ## Conflicts
 
-**Default (pending Devon's confirmation):** the latest change wins, and EB is the record.
+**Confirmed (Devon, 2026-11-10):** the latest change wins, and EB is the record.
 If lets-roll and EB disagree about a kill, the most recent change applies, and EB's stored state is what everything else reads.
 
 ## Related
