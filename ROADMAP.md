@@ -44,7 +44,7 @@ In a module, treasure implies encounters.
 An encounter moves from prepared, to executing in lets-roll (pulled by lets-roll or pushed by EB), to complete.
 EB owns the lifecycle, the kill state and the treasure package; lets-roll owns live combat, and only kills and the outcome flow back.
 Both directions are server-to-server.
-The default for conflicts, not yet confirmed by Devon, is that the latest change wins and EB is the record.
+For conflicts, the latest change wins and EB is the record (confirmed by Devon).
 Design: [encounter-lifecycle-bridge.md](docs/architecture/encounter-lifecycle-bridge.md). lets-roll prerequisite: `lets-roll-jlm`.
 
 ## Per-app must-haves
