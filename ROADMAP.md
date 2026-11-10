@@ -30,19 +30,22 @@ In a module, treasure implies encounters.
 
 | | Epic | Scope |
 |---|---|---|
-| M1 | `s9rv` | **Treasure loop.** Encounter Builder release → party-treasure, then give, sell, identify, and who-has-what. Includes `uotk`, item modification (`yyt3`), and precious-material and staff pricing (`76bn`). |
+| M1 | `s9rv` | **Treasure loop.** Encounter Builder release → party-treasure, then give, sell, identify, and who-has-what. Includes `uotk`, item modification (`yyt3`), and precious-material and staff pricing (`76bn`). The release is the last step of the encounter's treasure package flow (`we5k.2.5`), not a standalone button. |
 | M2 | `ivqk` | **Agent authoring.** Non-browser GM auth for an agent, a module → encounters skill, and a trial on one real module. Includes `gql1` and the fidelity list below. |
-| M3 | `we5k` | **GM run-time reference view.** Monsters, items and treasure state in one place, built on pfsrd2-display. Includes `we5k.1`. |
+| M3 | `we5k` | **GM run-time reference view.** Monsters, items and treasure state in one place, built on pfsrd2-display. Includes `we5k.1` and the encounter lifecycle (`we5k.2`). |
 | M4 | `fcu0` | **Prod cut-over** before the next campaign. Includes `pmib`, `chng` and the security gate below. |
 
 **M2 fidelity list** (gaps a real module exposes): `d886` conditional, state-gated and repeatable encounters (the most impactful), `n4ol` fight-or-social resolution branches, `0o77` modifiable creature equipment, `77l2` creature equipment in the treasure total, `kdv8` creatures customised beyond templates, `hzg8` per-instance identity and initiative, `ef41` and `agle` hazards, haunts, traps and afflictions as stat entities, `28se` destructible objects, `vwum` typed exit edges, `72wg` game_id collisions in skills.
 
 **M4 security gate** (closed before prod): `swkv` ECS role reads any secret, `cds4` staging GM password in git history, `wti5` a `--type` build wipes the prod index, `bwbz` stray directories indexed into prod S3, `fcu0.1` plaintext admin token in fleet-reference.md, and the player privacy leaks `lets-roll-7aj`, `lets-roll-cd1` and `lets-roll-yaa`.
 
-### Open question (M3)
+### Encounter lifecycle (M3, `we5k.2`)
 
-How does Encounter Builder's progress state (`we5k.1`) stay consistent with lets-roll's live combat state (`combat_mods`, `content_ref`, `initiative`)?
-For example: who records that a monster was defeated, and what happens when the two disagree?
+An encounter moves from prepared, to executing in lets-roll (pulled by lets-roll or pushed by EB), to complete.
+EB owns the lifecycle, the kill state and the treasure package; lets-roll owns live combat, and only kills and the outcome flow back.
+Both directions are server-to-server.
+The default for conflicts, not yet confirmed by Devon, is that the latest change wins and EB is the record.
+Design: [encounter-lifecycle-bridge.md](docs/architecture/encounter-lifecycle-bridge.md). lets-roll prerequisite: `lets-roll-jlm`.
 
 ## Per-app must-haves
 
@@ -92,7 +95,6 @@ These apply to every app. The full text lives in TEAM.md rule 8 and in the PM's 
 - 521-engine: conditions and templates.
 - Monster Lab and Treasure Lab.
 - The Quantum Dice Service. A design doc exists at `~/521Studios/quantum-dice-fairness-system.md`; there is no bead yet.
-- Pushing an encounter to lets-roll for live combat.
 - Open-sourcing pfsrd2-data-api and pfsrd2-display.
 - The quick no-sign-in tool as a separate product for a different audience.
 - wyrd.

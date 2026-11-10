@@ -90,6 +90,10 @@ deliberate exception to "Shared Nothing" below. Devon's reason (2026-11-10):
 moving treasure into a party is "easier to be secure if it's a tested and
 validated backend operation" than a browser handoff.
 
+**Planned:** two more server-to-server edges between encounter-builder-api and
+lets-roll. They carry the encounter pull and push, and the kill sync. See
+[encounter-lifecycle-bridge.md](encounter-lifecycle-bridge.md) (`we5k.2`).
+
 ## Build-Time Dependencies
 
 These are consumed during CI/CD or development, not at runtime.
