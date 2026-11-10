@@ -26,6 +26,7 @@ This repo does not contain application code. It contains the architectural recor
     │   ├── service-dependencies.md        # Runtime + build-time dependency map
     │   ├── content-ref.md                 # ContentRef / modifications[] contract (ACCEPTED)
     │   ├── encounter-treasure-cluster.md  # Encounter Builder + Party Treasure plan
+    │   ├── encounter-lifecycle-bridge.md  # EB lifecycle + lets-roll combat bridge (we5k.2)
     │   ├── extraction-roadmap.md          # Monolith decomposition plan and principles
     │   └── external-docs-index.md         # Architecture docs in other repos
     ├── design/encounter-builder-v2.md     # Encounter Builder v2 design of record
