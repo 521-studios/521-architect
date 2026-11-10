@@ -31,7 +31,7 @@ A recurring design principle: optimize output formats for human review via `git 
 
 - **pfsrd2-web:** One HTML tag per line (xmllint + newline after `>`)
 - **pfsrd2-data:** JSON keys sorted alphabetically
-- **Terraform:** `terraform fmt` enforced
+- **Terraform (OpenTofu):** `tofu fmt` enforced
 
 If you're generating output that humans need to review, make it diffable.
 
@@ -98,14 +98,21 @@ If you're generating output that humans need to review, make it diffable.
 | Tests | Node built-in test runner |
 | Methodology | TDD |
 
-### infra / infra-frontend (Terraform)
+### Infrastructure as code: OpenTofu
+
+**OpenTofu is the standard** (Devon). Use the `tofu` CLI, not `terraform`, for
+fmt, validate, plan and apply, both locally and in CI
+(`opentofu/setup-opentofu`, not `hashicorp/setup-terraform`). The HCL and the
+`terraform/` directory names stay as they are.
+
+### infra / infra-frontend (OpenTofu)
 
 | Tool | Standard |
 |------|----------|
-| Terraform | 1.6+ (infra), 1.9+ (infra-frontend) |
+| OpenTofu | `tofu` CLI |
 | AWS Provider | ~> 6.0 |
-| Formatting | `terraform fmt` (pre-commit hook + CI check) |
-| Validation | `terraform validate` (pre-commit, no backend) |
+| Formatting | `tofu fmt` (pre-commit hook + CI check) |
+| Validation | `tofu validate` (pre-commit, no backend) |
 | State | S3 + DynamoDB locking per environment |
 | Auth | GitHub OIDC — no stored AWS credentials |
 

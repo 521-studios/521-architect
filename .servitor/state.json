@@ -10,7 +10,7 @@
     "service_dependencies": "complete",
     "extraction_roadmap": "complete",
     "engineering_standards": "complete",
-    "content_ref": "draft"
+    "content_ref": "accepted"
   },
   "goals": {
     "encounter-builder-usable": {

@@ -1,7 +1,7 @@
 # ContentRef and `modifications[]` — cross-service contract
 
-Status: **DRAFT** (2026-11-10). Owner: Abadar (521-architect). Agreed with
-521-engine, encounter-builder-api, party-treasure-api. Supersedes the informal
+Status: **ACCEPTED** (2026-11-10, Devon). Owner: 521-architect. Agreed with
+521-engine, encounter-builder-api, party-treasure-api, lets-roll. Supersedes the informal
 shape in [encounter-treasure-cluster.md §4](encounter-treasure-cluster.md).
 
 ContentRef is how every service in the encounter/treasure cluster holds "a
