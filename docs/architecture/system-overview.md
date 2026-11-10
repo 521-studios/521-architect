@@ -89,7 +89,7 @@ lets-roll. Encounter Builder is prep-only (Devon, 2026-11-10).
 
 **521-engine** — DAG-based tabletop RPG game engine
 - Design docs only; code is on hold. The session owns its design docs, and
-  Abadar reviews where the engine crosses system boundaries.
+  521-architect reviews where the engine crosses system boundaries.
 - Decided (Devon, 2026-11-10): stacking rules are data. GM-authored content is
   declarative only. Vetted compute is compiled at build time and referenced
   by content-hashed id, with no runtime eval. Template stacking
@@ -140,7 +140,7 @@ and this table disagree, trust TEAM.md.
 | pfsrd2-display | Devon | pfsrd2-display | 521-studios/pfsrd2-display |
 | 521-engine | Devon | 521-engine | 521-studios/521-engine |
 | wyrd | Devon | wyrd | wyrd |
-| 521-architect | Devon | 521-architect (Abadar) | 521-architect |
+| 521-architect | Devon | 521-architect | 521-architect |
 | pfsrd2-parser | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Parser |
 | pfsrd2-data | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Data |
 | pfsrd2-web | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Web |
