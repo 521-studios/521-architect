@@ -111,8 +111,7 @@ Each layer reads the previous via `terraform_remote_state`. Deploy in order.
 
 ## Agent Fleet
 
-| Agent | Deity | Role | Repo |
-|-------|-------|------|------|
-| Fleet Commander | Iomedae | Fleet operations | servitor |
-| API Guardian | Nethys | pfsrd2-data-api steward | pfsrd2-data-api |
-| System Architect | Abadar | Architecture ownership | 521-architect |
+The live roster and team rules are in `~/521Studios/TEAM.md`, maintained by
+`pm-521-studios`. Read it at session start. Status and questions go to the PM;
+workers may message each other directly. The steward table is in
+`docs/architecture/system-overview.md`.

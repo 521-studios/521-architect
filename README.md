@@ -9,6 +9,7 @@ No application code lives here. This is the First Vault: the authoritative refer
 ## Quick Links
 
 - [System Overview](docs/architecture/system-overview.md) — What we build, product philosophy, service catalog
+- [ContentRef contract](docs/architecture/content-ref.md) — Cross-service shape for monsters/items and `modifications[]`
 - [Service Dependencies](docs/architecture/service-dependencies.md) — Runtime and build-time dependency map
 - [Data Pipeline](docs/pipeline/data-pipeline.md) — pfsrd2 HTML → JSON → S3 → API
 - [AWS Infrastructure](docs/infrastructure/aws-infrastructure.md) — Three-layer Terraform stack

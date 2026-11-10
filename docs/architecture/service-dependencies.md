@@ -65,6 +65,31 @@ These are live connections between services at runtime.
 
 CloudFront terminates TLS. ALB receives HTTP only.
 
+## Encounter / Treasure Cluster
+
+Each SPA has its own CloudFront edge (infra-frontend `encounter-builder-cf`,
+`party-treasure-cf`). Its own API sits behind it, along with pfsrd2-data-api,
+both through OAC.
+
+| From | To | How |
+|---|---|---|
+| SPAs, sibling APIs | lets-roll OIDC | Bearer JWT (RS256). APIs verify offline after fetching JWKS. Discovery is lazy, so a lets-roll outage gives 401s, not a crash. Behind OAC the bearer travels in `X-Access-Token`, because `Authorization` carries SigV4. |
+| encounter-builder-api, party-treasure-api | lets-roll `GET /api/v1/games/:id` | Caller's bearer forwarded, to decide GM vs member. |
+| encounter-builder-api | party-treasure-api `POST /parties/{id}/releases` | **Server-to-server**, SigV4. Identity is matched exactly against `SERVICE_RELEASE_ROLE_ARN`. Idempotent on the client ULID. |
+| SPAs | pfsrd2-data-api | Same-origin path on each edge. Clients resolve ContentRefs; the APIs never do. |
+| encounter-builder-web | encounter-builder S3 maps bucket | Presigned POST (≤15 MB, png/jpeg/webp, tagged `state=pending` until saved; untagged-on-save, pending expire after 1 day). Served through the encounters edge with uuid keys. Bucket in encounter-builder-api terraform; origin, OAC and bucket policy in infra-frontend. |
+
+ContentRef, the shared shape for "a monster" or "an item", is a
+cross-service contract: [content-ref.md](content-ref.md).
+
+**Divergence from plan.** [encounter-treasure-cluster.md](encounter-treasure-cluster.md)
+§5 planned the release as a browser-driven call, keeping the "browser is the
+integration point" rule. What shipped is a SigV4 service push from
+encounter-builder-api. That is the cluster's one server-to-server edge, and a
+deliberate exception to "Shared Nothing" below. Devon's reason (2026-11-10):
+moving treasure into a party is "easier to be secure if it's a tested and
+validated backend operation" than a browser handoff.
+
 ## Build-Time Dependencies
 
 These are consumed during CI/CD or development, not at runtime.
@@ -73,9 +98,9 @@ These are consumed during CI/CD or development, not at runtime.
 
 ```
 infra (baseline)
-  ↓ provides: vpc_id, subnet_ids, ecs_cluster, alb, route53_zone_id, etc.
+  ↓ provides: vpc_id, subnet_ids, ecs_cluster, alb_security_group_id, route53_zone_id, etc.
 lets-roll terraform
-  ↓ provides: (self-contained, but ALB DNS consumed by infra-frontend)
+  ↓ provides: ALB (owned here since infra-1.2); its DNS is consumed by infra-frontend
 pfsrd2-data-api terraform
   ↓ provides: lambda_function_url, s3_bucket_name, s3_bucket_regional_domain
 infra-frontend
