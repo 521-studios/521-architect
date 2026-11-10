@@ -42,7 +42,7 @@ element survive every round trip.
 | `kind` | Discriminator. Decides how `params` is read. |
 | `id` | Unique per application (ULID). Two "+2 AC (GM)" overrides must not collide. |
 | `params` | Kind-specific. Every game object it references carries a pinned version. |
-| `v` | Schema version of this element's `params`. |
+| `v` | Schema version of this element's `params`. Not the same as `version` inside `params`, which is the pfsrd2 schema version of a referenced object. |
 | `engine_version` | On kinds that 521-engine resolves: the engine semantics the snapshot was computed under, so a stored snapshot can be recomputed when stacking rules change. |
 
 ## Truth, cache and replay
@@ -80,6 +80,7 @@ Order matters for list/set operations and last-wins strings.
   id**, the same convention as `game_id`. A changed body gets a new id, so a
   stored element cannot pick up new behaviour. Registry build output is
   append-only, and old hashes stay loadable.
+- **Compiled compute must be pure:** no `Date`, `Math.random` or I/O, and the same output for the same inputs. Client and server must agree for replay to be exact.
 - There is no runtime `eval` or `new Function` in the browser path, so the
   SPAs can run under a CSP without `unsafe-eval`. Client (browser) and server
   (goja) load the same built modules.
@@ -92,6 +93,15 @@ Builder is prep-only: prep, release, then run the encounter in lets-roll.
 Conditions never enter `modifications`, so released snapshots never carry
 stale temporary state.
 
+lets-roll keeps live state per encounter monster in its own
+`combat_mods jsonb` list (lets-roll-jlm). That list reuses the `Mod` element
+shape (`condition` with a pinned `{game_id, version, value}`, and later
+`override`), so the engine resolves both lists the same way. It is never
+copied into a ContentRef and never released. Templates applied at the table,
+such as elite/weak, are ContentRef `template` Mods in lets-roll's
+`content_ref` column, not live state. Initiative is a plain column in
+lets-roll's turn order, not a Mod.
+
 ## Validation
 
 encounter-builder-api and party-treasure-api keep elements opaque. Validating
@@ -103,10 +113,21 @@ in that repo.
 
 | `kind` | Status | Notes |
 |---|---|---|
-| `template` | **Shipped, pre-spec shape** | Today's elements are `{template_game_id, template_name}`, with no `kind`, `id`, `v` or pin (`encounter-builder-web/src/monsterRef.js`). Readers must treat an element without `kind` as a legacy template. Writers move to `{kind:"template", id, params:{game_id, version}, v:1}`. |
+| `template` | **Shipped, pre-spec shape** | Legacy elements are `{template_game_id, template_name}`, with no `kind`, `id`, `v` or pin (`encounter-builder-web/src/monsterRef.js`). Writers move to `{kind:"template", id, params:{game_id, version}, v:1}`. |
+| `item_effect` | **Shipped, pre-spec shape** | Legacy elements are `{effect_game_id, effect_name, grade, price_mode:'add'\|'set'}`, where a missing `price_mode` means `'add'` (`encounter-builder-web/src/itemRef.js`). Writers move to `{kind:"item_effect", id, params:{game_id, version, grade, price_cp, price_mode}, v:1}`. |
 | GM override | Planned (hzg8/kdv8) | Declarative effect. Replaces the proposed per-instance overrides field on MonsterEntry. |
 | Item construction (runes, spell in scroll) | Planned | Owned by pfsrd2-data-api itemapply. |
-| Engine game objects | Planned | 521-engine Phase 5. |
+| Engine game objects | Planned | 521-engine Phase 5. (Conditions are a Phase 4 consumer in lets-roll's `combat_mods`, not a ContentRef.) |
+
+**Reading legacy elements.** An element without `kind` is classified by its
+keys: `template_game_id` means a legacy `template`, and `effect_game_id`
+means a legacy `item_effect`. Anything else is an error.
+
+**`MonsterEntry.adjustment`** (`none|elite|weak`) is a legacy field on
+encounter-builder's monster line, outside the ContentRef. Readers honour it
+only on pristine refs, and a derived ref's template Mods take precedence (as
+`encounter-builder-web/src/budget.js` already does). New writes express
+elite/weak as `template` Mods, matching lets-roll's `content_ref`.
 
 ## Open
 
