@@ -30,6 +30,19 @@ In a module, treasure implies encounters.
 | M4 | `bd_521Studios-fcu0` | **Prod cut-over** before the next campaign, 1–3 months from 2026-11-10. Includes `pmib` and `chng`. |
 | Later | | Decomposing lets-roll, 521-engine (conditions and templates), a quick tool that needs no sign-in, wyrd. |
 
+## Per-app must-haves
+
+Extend this as Devon names more.
+
+**Encounter Builder**
+- Each encounter gets a room view: a crop of the chapter map showing the room and the area around it, so you can see how it fits in. An optional upload for the encounter overrides the crop. (`muz0.7`)
+- From an encounter, move to its neighbours along the exits graph, or click out to the full chapter map. (`muz0.8`)
+- Encounters record progress during play: status, defeated monsters, treasure released or taken, and GM notes. (`we5k.1`, under M3)
+
+## Decisions
+
+- Encounter Builder covers prep plus progress, and lets-roll runs live combat. This revises the earlier "Encounter Builder is prep-only" decision.
+
 ## Current order
 
 1. Finish the chapter maps (`bd_521Studios-muz0`).
