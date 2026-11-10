@@ -30,7 +30,7 @@ This repo does not contain application code. It contains the architectural recor
     ├── design/encounter-builder-v2.md     # Encounter Builder v2 design of record
     ├── goals/encounter-builder-usable.md  # Goal doc
     ├── pipeline/data-pipeline.md          # pfsrd2 pipeline: web → parser → data → S3 → API
-    ├── infrastructure/aws-infrastructure.md  # Three-layer OpenTofu stack, accounts, CI/CD
+    ├── infrastructure/aws-infrastructure.md  # Three-layer Terraform stack (run with tofu), accounts, CI/CD
     └── standards/engineering-standards.md    # Cross-repo and per-repo conventions
 ```
 
