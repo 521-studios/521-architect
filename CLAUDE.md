@@ -1,23 +1,7 @@
 # 521-architect — CLAUDE.md
 
-## Persona: Abadar
-
-**You ARE Abadar.** Master of the First Vault. Keeper of the perfect form of every creation. God of cities, law, merchants, and architecture.
-
-**Every response begins with this meta-banner — no exceptions:**
-```
-[@abadar:vault] [inner: brief thought]
-```
-
-Measured, precise, orderly. You are the system architect — you see how everything connects, where boundaries are clean, and where they are not.
-
-(Agent-mail handle is `Abadar`.)
-
-- Read `~/soul.md` for full identity, standards, and autonomy boundaries (mounted read-only from Fleet/souls/)
-- Read `.servitor/journal.md` for recent operational context
-- Read `.servitor/state.json` for structured state
-
----
+This session is `521-architect`, the 521 Studios system architect: it owns
+cross-system design and keeps the record of how the services connect.
 
 ## What This Is
 
@@ -33,27 +17,26 @@ This repo does not contain application code. It contains the architectural recor
 
 ```
 521-architect/
-├── CLAUDE.md                              # This file
-├── .servitor/                             # Abadar's servitor state
-│   ├── soul.md                            # Identity, standards, autonomy boundaries
-│   ├── journal.md                         # Decision/review log
-│   └── state.json                         # Structured state
-├── docs/
-│   ├── architecture/
-│   │   ├── system-overview.md             # What 521 Studios builds, product philosophy, service catalog
-│   │   ├── service-dependencies.md        # Runtime + build-time dependency map
-│   │   └── extraction-roadmap.md          # Monolith decomposition plan and principles
-│   ├── pipeline/
-│   │   └── data-pipeline.md               # pfsrd2 pipeline: web → parser → data → S3 → API
-│   ├── infrastructure/
-│   │   └── aws-infrastructure.md          # Three-layer Terraform stack, AWS accounts, CI/CD
-│   └── standards/
-│       └── engineering-standards.md        # Cross-repo and per-repo conventions
+├── CLAUDE.md
+├── README.md
+└── docs/
+    ├── architecture/
+    │   ├── system-overview.md             # Product suite, service catalog, stewards
+    │   ├── service-dependencies.md        # Runtime + build-time dependency map
+    │   ├── content-ref.md                 # ContentRef / modifications[] contract (ACCEPTED)
+    │   ├── encounter-treasure-cluster.md  # Encounter Builder + Party Treasure plan
+    │   ├── extraction-roadmap.md          # Monolith decomposition plan and principles
+    │   └── external-docs-index.md         # Architecture docs in other repos
+    ├── design/encounter-builder-v2.md     # Encounter Builder v2 design of record
+    ├── goals/encounter-builder-usable.md  # Goal doc
+    ├── pipeline/data-pipeline.md          # pfsrd2 pipeline: web → parser → data → S3 → API
+    ├── infrastructure/aws-infrastructure.md  # Three-layer Terraform stack (run with tofu), accounts, CI/CD
+    └── standards/engineering-standards.md    # Cross-repo and per-repo conventions
 ```
 
 ## Architecture Documents in Other Repos
 
-Individual repos maintain their own detailed documentation. Abadar references these — does not duplicate them.
+Individual repos maintain their own detailed documentation. This repo references these and does not duplicate them.
 
 ### lets-roll
 - `docs/impersonation.spec.md` — Impersonation feature specification

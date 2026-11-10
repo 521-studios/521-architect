@@ -1,10 +1,10 @@
 # 521-architect
 
-System architecture repository for 521 Studios. Maintained by Abadar.
+System architecture repository for 521 Studios. Maintained by the 521-architect session.
 
 This repo contains the architectural record — service catalog, dependency maps, data pipeline documentation, infrastructure architecture, engineering standards, and extraction roadmap for the 521 Studios ecosystem.
 
-No application code lives here. This is the First Vault: the authoritative reference for how everything connects.
+No application code lives here. It is the authoritative reference for how everything connects.
 
 ## Quick Links
 

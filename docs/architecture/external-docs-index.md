@@ -1,6 +1,6 @@
 # External Architecture Documentation Index
 
-Architecture knowledge lives in individual repos alongside the code it describes. This index maps what exists where, so Abadar (and anyone else) can find the authoritative source for any topic.
+Architecture knowledge lives in individual repos alongside the code it describes. This index maps what exists where, so anyone can find the authoritative source for any topic.
 
 ## lets-roll
 
@@ -80,7 +80,7 @@ Comprehensive design specification in 13 documents. This is the most architectur
 
 ## What's Missing
 
-Areas without dedicated documentation (potential Abadar action items):
+Areas without dedicated documentation (potential 521-architect action items):
 - **pfsrd2-automation** — No architecture docs. Build/upload process documented only in CI config and CLAUDE.md.
 - **pfsrd2-data** — No architecture docs beyond CLAUDE.md. Schema versioning strategy is oral knowledge.
 - **pfsrd2-web** — No architecture docs. The download/normalize/patch workflow is documented only in shell script comments and CLAUDE.md.

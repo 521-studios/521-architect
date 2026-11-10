@@ -116,17 +116,6 @@ fmt, validate, plan and apply, both locally and in CI
 | State | S3 + DynamoDB locking per environment |
 | Auth | GitHub OIDC — no stored AWS credentials |
 
-### servitor (Go)
-
-| Tool | Standard |
-|------|----------|
-| Go | 1.25+ |
-| Dependencies | stdlib only — no external deps |
-| Formatting | `gofmt` + `go vet` |
-| Error handling | Wrap with context, no naked returns |
-| Logging | Structured to stderr with timestamps and component tags |
-| Locking | Cross-process file locks with stale PID detection |
-
 ## Security Standards
 
 - No secrets in code. Use AWS Secrets Manager, environment variables, or SSO.
