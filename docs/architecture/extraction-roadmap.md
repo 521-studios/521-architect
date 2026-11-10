@@ -2,7 +2,7 @@
 
 ## Philosophy
 
-lets-roll started as a monolith — a collaborative dice roller that Morgan built during COVID. As the product scope has grown (monsters, encounters, character management), pieces are being extracted into independent services.
+lets-roll started as a monolith: a collaborative dice roller built during COVID. As the product scope has grown (monsters, encounters, character management), pieces are being extracted into independent services.
 
 The extraction principle: **a service earns its independence when it serves more than one consumer.** We don't extract for the sake of microservices. We extract when a capability is needed by multiple applications or when the bounded context is clear enough that independent development and deployment provide real value.
 
@@ -16,7 +16,7 @@ Each extracted service should be useful standalone. The dice roller isn't just "
 
 **Status:** Production, serving lets-roll's frontend.
 
-**Consumers:** lets-roll (client-side), pfsrd2-display (dev harness). Planned: Monster Lab, open-source public API.
+**Consumers:** lets-roll (client-side), encounter-builder-web, pfsrd2-display (dev harness). Planned: Monster Lab, open-source public API.
 
 **Boundary:** Owns all Pathfinder 2e structured game data. Read-only. Stateless (SQLite from S3). No user data, no game state.
 
@@ -26,9 +26,17 @@ Each extracted service should be useful standalone. The dice roller isn't just "
 
 **Status:** Extracted and packaged as `@521studios/pfsrd2-display`. Not yet re-integrated into lets-roll.
 
-**Consumers:** None yet. Will replace lets-roll's built-in rendering, then be open-sourced.
+**Consumers:** encounter-builder-web, party-treasure-web, and its own staging harness. Planned: replace lets-roll's built-in rendering, then open-source.
 
 **Boundary:** Pure presentation. Takes creature JSON + optional patches, renders stat blocks. No data fetching, no state management. Callbacks (`onRoll`, `onLoadMonster`) let consumers handle interactions.
+
+### Party Treasure (was "Equipment Tracker")
+
+**Built as:** `party-treasure-api` + `party-treasure-web`, running in staging. Prod cut-over is `chng`, under M4.
+
+**Consumers:** encounter-builder-api (release push), and players and GMs via the SPA.
+
+**Boundary:** The party's held loot: items, masking, identify, trades, the coin ledger and sales. It stores ContentRefs opaquely and never calls pfsrd2-data-api. It doesn't know about combat, dice or sessions. See [encounter-treasure-cluster.md](encounter-treasure-cluster.md).
 
 ## In Progress
 
@@ -51,14 +59,6 @@ Each extracted service should be useful standalone. The dice roller isn't just "
 **Extraction plan:** Standalone service that provides verifiably random dice rolls. Could serve lets-roll, Monster Lab (for random encounter generation), or any third-party consumer.
 
 **Service boundary:** Random number generation with quantum entropy. No game logic, no character knowledge. Takes a dice formula, returns results with entropy source metadata.
-
-### Equipment Tracker
-
-**Currently:** Not built. lets-roll has no loot/inventory system.
-
-**Vision:** Encounters can drop equipment. Party can collect, sell, or assign items to characters. Integrates with pfsrd2-data-api for equipment data (stats, prices, bulk).
-
-**Service boundary:** Inventory management. Knows about items (via pfsrd2-data-api) and ownership (which character has what). Doesn't know about combat, dice, or sessions.
 
 ### 521-engine Integration
 

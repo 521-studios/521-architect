@@ -93,7 +93,8 @@ Order matters for list/set operations and last-wins strings.
 
 **Play-time state is not a ContentRef.** HP, conditions and initiative belong
 to live combat, which **lets-roll** owns (Devon, 2026-11-10). Encounter
-Builder is prep-only: prep, release, then run the encounter in lets-roll.
+Builder covers prep plus progress (status, defeated monsters, treasure, GM
+notes), but not live combat state.
 Conditions never enter `modifications`, so released snapshots never carry
 stale temporary state.
 

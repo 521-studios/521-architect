@@ -22,7 +22,7 @@ This repo does not contain application code. It contains the architectural recor
 ├── ROADMAP.md                             # Why, milestones, order (pm-521-studios keeps it current)
 └── docs/
     ├── architecture/
-    │   ├── system-overview.md             # Product suite, service catalog, stewards
+    │   ├── system-overview.md             # Product suite, service catalog
     │   ├── service-dependencies.md        # Runtime + build-time dependency map
     │   ├── content-ref.md                 # ContentRef / modifications[] contract (ACCEPTED)
     │   ├── encounter-treasure-cluster.md  # Encounter Builder + Party Treasure plan
@@ -97,5 +97,4 @@ Each layer reads the previous via `terraform_remote_state`. Deploy in order.
 
 The live roster and team rules are in `~/521Studios/TEAM.md`, maintained by
 `pm-521-studios`. Read it at session start. Status and questions go to the PM;
-workers may message each other directly. The steward table is in
-`docs/architecture/system-overview.md`.
+workers may message each other directly. TEAM.md is also the steward table.

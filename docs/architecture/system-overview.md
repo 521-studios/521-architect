@@ -42,7 +42,9 @@ There is no `end_session_endpoint`, so SPA sign-out clears only local tokens
 (`bd_521Studios-2l4x`, P3).
 
 **lets-roll owns live combat.** HP, conditions and initiative belong to
-lets-roll. Encounter Builder is prep-only (Devon, 2026-11-10).
+lets-roll. Encounter Builder covers prep plus progress: status, defeated
+monsters, treasure released or taken, and GM notes (Devon, 2026-11-10;
+`we5k.1`). See [ROADMAP.md](../../ROADMAP.md).
 
 **Encounter Builder** — GM prep: campaigns, chapters, encounters, monsters, treasure
 - `encounter-builder-api`: Go Lambda behind `/api/app/*`, DynamoDB
@@ -109,7 +111,8 @@ lets-roll. Encounter Builder is prep-only (Devon, 2026-11-10).
 
 **Quantum Dice Service** — Extract the ANU quantum entropy roller as a standalone service
 
-**Equipment Tracker** — Encounter loot drops, party inventory, sell/assign to players
+The Equipment Tracker that was planned here shipped as **Party Treasure** (above).
+For ordering, see [ROADMAP.md](../../ROADMAP.md).
 
 ## Data Pipeline
 
@@ -119,37 +122,13 @@ See: [Data Pipeline Architecture](../pipeline/data-pipeline.md)
 
 ## People
 
-**Devon Jones** — Data pipeline, game engine, infrastructure, pfsrd2-* ecosystem. Long history with Pathfinder reference tools (Pathfinder Open Reference, 500k+ installs on Android).
-
-**Morgan** — Built lets-roll. Product development and the Rails/React application layer.
+**Devon Jones** — Owns every 521 repo. Data pipeline, game engine, infrastructure, pfsrd2-* ecosystem. Long history with Pathfinder reference tools (Pathfinder Open Reference, 500k+ installs on Android).
 
 ## Service Ownership
 
-Human owner, then the agent session that stewards the repo day to day. The
-live roster is `~/521Studios/TEAM.md`, maintained by `pm-521-studios`. If it
-and this table disagree, trust TEAM.md.
-
-| Service | Owner | Steward session | Repo |
-|---------|-------|-----------------|------|
-| lets-roll | Morgan + Devon | lets-roll | 521-studios/lets-roll |
-| encounter-builder-api | Devon | encounter-builder-api | encounter-builder-api |
-| encounter-builder-web | Devon | encounter-builder-web | encounter-builder-web |
-| party-treasure-api | Devon | party-treasure-api-cf | party-treasure-api |
-| party-treasure-web | Devon | party-treasure-web-ee | party-treasure-web |
-| pfsrd2-data-api | Devon | pfsrd2-data-api | 521-studios/pfsrd2-data-api |
-| pfsrd2-display | Devon | pfsrd2-display | 521-studios/pfsrd2-display |
-| 521-engine | Devon | 521-engine | 521-studios/521-engine |
-| wyrd | Devon | wyrd | wyrd |
-| 521-architect | Devon | 521-architect | 521-architect |
-| pfsrd2-parser | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Parser |
-| pfsrd2-data | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Data |
-| pfsrd2-web | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Web |
-| pfsrd2-corpus | Devon | pm-masterwork-tools (session `corpus`) | pfsrd2-corpus |
-| pfsrd2-automation | Devon | none yet | 521-studios/pfsrd2-automation |
-| infra | Devon | 521-infra | 521-studios/infra |
-| infra-frontend | Devon | 521-infra-frontend | 521-studios/infra-frontend |
-| tools | Devon | none yet | 521-studios/tools |
-| smoke_tests | Devon | none yet | 521-studios/smoke_tests |
+Devon owns every repo. The steward session for each repo, and which repos have
+none yet, is in `~/521Studios/TEAM.md`, maintained by `pm-521-studios`. It is
+not duplicated here, so the two can't drift apart.
 
 Coordinate on the pfsrd2-parser/data/web/corpus repos through
 `pm-masterwork-tools`, a separate PM.
@@ -157,6 +136,6 @@ Coordinate on the pfsrd2-parser/data/web/corpus repos through
 ## Agent Fleet
 
 `pm-521-studios` is the project manager. It relays to and from Devon and owns
-the `bd_521Studios` beads store. Each worker session stewards the repo listed
-above. Questions and status go to the PM, and workers may talk to each other
+the `bd_521Studios` beads store. Each worker session stewards the repo TEAM.md
+lists for it. Questions and status go to the PM, and workers may talk to each other
 directly.

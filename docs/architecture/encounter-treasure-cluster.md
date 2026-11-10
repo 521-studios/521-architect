@@ -1,6 +1,11 @@
 # Encounter Builder + Party Treasure — Cluster Plan
 
-Status: PROPOSED (2026-08-11). Planner: Claude (Fable). Owner: Devon.
+Status: ACCEPTED, built and running in staging (updated 2026-11-10). Planned 2026-08-11. Owner: Devon.
+
+> **Superseded in part:** the release handshake in §5 was never built as a browser call.
+> What shipped is a server-to-server SigV4 push from encounter-builder-api to party-treasure-api, chosen deliberately (Devon, 2026-11-10).
+> See [service-dependencies.md](service-dependencies.md).
+> The browser is still the integration point everywhere else.
 
 Two new apps joining the 521 Studios cluster: **Encounter Builder** (GM builds
 encounters with monsters + treasure for a campaign) and **Party Treasure**
@@ -196,6 +201,8 @@ manual (GM clicks identify / player enters roll vs DC) — no lets-roll dice
 integration yet (opt-in complexity; wire to lets-roll rolls later if wanted).
 
 ## 5. The release handshake (browser as integration point)
+
+> **Superseded.** The release is a server-to-server SigV4 push. The steps below are the original plan, kept for history.
 
 No server-to-server calls, per the standing rule:
 
