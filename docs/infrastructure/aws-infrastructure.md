@@ -57,7 +57,7 @@ Shared resources consumed by all services:
 All downstream services consume these via `terraform_remote_state`:
 - `vpc_id`, `public_subnet_ids`, `private_subnet_ids`
 - `ecs_cluster_arn`, `ecs_cluster_name`
-- `alb_arn`, `alb_listener_https_arn`, `alb_security_group_id`
+- `alb_security_group_id` (the ALB itself lives in lets-roll/terraform since infra-1.2)
 - `task_execution_role_arn`, `task_role_arn`
 - `db_cluster_endpoint`, `db_secret_arn`
 - `activestorage_bucket_name`
@@ -71,6 +71,7 @@ Each service manages its own infrastructure in its own repo.
 ### lets-roll
 
 - ECR repository (scan-on-push, keep last 20 images)
+- ALB + HTTPS listener (moved here from infra in infra-1.2; uses infra's `alb_security_group_id`)
 - ALB target group (health check every 30s, 30s drain for WebSockets)
 - ECS task definition (512 CPU, 1024 MB RAM)
 - ECS service (Fargate, public IPs — no NAT)

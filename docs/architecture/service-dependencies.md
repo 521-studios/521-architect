@@ -98,9 +98,9 @@ These are consumed during CI/CD or development, not at runtime.
 
 ```
 infra (baseline)
-  ↓ provides: vpc_id, subnet_ids, ecs_cluster, alb, route53_zone_id, etc.
+  ↓ provides: vpc_id, subnet_ids, ecs_cluster, alb_security_group_id, route53_zone_id, etc.
 lets-roll terraform
-  ↓ provides: (self-contained, but ALB DNS consumed by infra-frontend)
+  ↓ provides: ALB (owned here since infra-1.2); its DNS is consumed by infra-frontend
 pfsrd2-data-api terraform
   ↓ provides: lambda_function_url, s3_bucket_name, s3_bucket_regional_domain
 infra-frontend
