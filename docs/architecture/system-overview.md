@@ -67,8 +67,8 @@ lets-roll. Encounter Builder is prep-only (Devon, 2026-11-10).
   names with etymology. API: `GET /api/manifest`, `GET|POST /api/<generator>`.
   Every response uses the envelope `{result, explanation, components, seed}`.
 - Flask on Lambda (Function URL), reading a bundled SQLite runtime DB, plus a
-  Svelte SPA. Its Terraform lives in `wyrd/terraform` (status: unconfirmed
-  whether that's intentional). It keeps its own beads tracker (intentional).
+  Svelte SPA. Its Terraform lives in `wyrd/terraform` for now; it is to be
+  folded into `infra/` later (`bd_521Studios-t65j`, P3). It keeps its own beads tracker (intentional).
 - Offline authoring: a lexicon mined from place-name dictionaries and
   wiktextract. Ollama on Devon's MacBook is used at authoring time only,
   never on the request path.
@@ -146,8 +146,8 @@ and this table disagree, trust TEAM.md.
 | pfsrd2-web | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Web |
 | pfsrd2-corpus | Devon | pm-masterwork-tools (session `corpus`) | pfsrd2-corpus |
 | pfsrd2-automation | Devon | none yet | 521-studios/pfsrd2-automation |
-| infra | Devon | none yet | 521-studios/infra |
-| infra-frontend | Devon | none yet | 521-studios/infra-frontend |
+| infra | Devon | 521-infra | 521-studios/infra |
+| infra-frontend | Devon | 521-infra-frontend | 521-studios/infra-frontend |
 | tools | Devon | none yet | 521-studios/tools |
 | smoke_tests | Devon | none yet | 521-studios/smoke_tests |
 

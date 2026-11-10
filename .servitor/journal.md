@@ -45,3 +45,6 @@ no runtime eval; stacking rules are data; 4zx0 waits for engine Phase 5.
   HeadObject on save). party-treasure-web masked items → ItemCard (library fix).
 - Open for Devon: wyrd standalone Terraform intentional?; release push went
   server-to-server vs the cluster plan's browser handoff — record why.
+- Devon: release push server-to-server is deliberate (backend op is easier to
+  secure and test); wyrd terraform folds into infra later (t65j). New stewards:
+  521-infra, 521-infra-frontend.

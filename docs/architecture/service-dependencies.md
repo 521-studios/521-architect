@@ -85,9 +85,10 @@ cross-service contract: [content-ref.md](content-ref.md).
 **Divergence from plan.** [encounter-treasure-cluster.md](encounter-treasure-cluster.md)
 §5 planned the release as a browser-driven call, keeping the "browser is the
 integration point" rule. What shipped is a SigV4 service push from
-encounter-builder-api. That is the cluster's one server-to-server edge, and an
-exception to "Shared Nothing" below. No decision recording why it changed has
-been found. Open question for Devon.
+encounter-builder-api. That is the cluster's one server-to-server edge, and a
+deliberate exception to "Shared Nothing" below. Devon's reason (2026-11-10):
+moving treasure into a party is "easier to be secure if it's a tested and
+validated backend operation" than a browser handoff.
 
 ## Build-Time Dependencies
 

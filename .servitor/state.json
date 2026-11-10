@@ -22,9 +22,7 @@
   "pending": [
     "ADR (architecture decision record) format and first entries",
     "encounter-builder prod cut-over (bead pmib) \u2014 Devon-gated",
-    "content-ref.md: DRAFT \u2192 ACCEPTED after stewards confirm",
-    "Devon: is wyrd's standalone terraform intentional?",
-    "Devon: why release push is server-to-server (cluster plan said browser)"
+    "content-ref.md: DRAFT \u2192 ACCEPTED after stewards confirm"
   ],
   "roster": "~/521Studios/TEAM.md"
 }
