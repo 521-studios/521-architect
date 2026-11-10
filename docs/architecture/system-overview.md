@@ -30,19 +30,71 @@ This is deliberately not a monolithic virtual tabletop (VTT) like Roll20 or Foun
 - Planned: open-source release
 - Repo: `521-studios/pfsrd2-data-api`
 
-### Extracted, Not Yet Integrated
+Encounter Builder and Party Treasure are shipped to staging. Their prod
+cut-over is bead `pmib` (open, Devon-gated).
 
-**pfsrd2-display** — React component library for PF2e stat blocks
-- Extracted from lets-roll's monster rendering
+**lets-roll as identity provider.** lets-roll is the cluster's OIDC provider
+(Doorkeeper, Authorization Code + PKCE, RS256 JWT, JWKS). It also serves a
+small `/api/v1` with Me and Games reads, which the sibling APIs use to decide
+GM vs member. It first shipped to prod on 2026-11-10, with clients
+registered at deploy time for encounter-builder-web and party-treasure-web.
+There is no `end_session_endpoint`, so SPA sign-out clears only local tokens
+(`bd_521Studios-2l4x`, P3).
+
+**lets-roll owns live combat.** HP, conditions and initiative belong to
+lets-roll. Encounter Builder is prep-only (Devon, 2026-11-10).
+
+**Encounter Builder** — GM prep: campaigns, chapters, encounters, monsters, treasure
+- `encounter-builder-api`: Go Lambda behind `/api/app/*`, DynamoDB
+  (`CAMPAIGN#<game_id>`). Owns encounters, chapters, the GM gate, chapter map
+  images (muz0) and the release push to party-treasure.
+- `encounter-builder-web`: Vite + React GM SPA, a thin consumer of
+  pfsrd2-display.
+- Design: [encounter-treasure-cluster.md](encounter-treasure-cluster.md),
+  [encounter-builder-v2.md](../design/encounter-builder-v2.md)
+
+**Party Treasure** — the party's held loot after release
+- `party-treasure-api`: Go Lambda behind `/api/party/*`, DynamoDB
+  (`PARTY#<game_id>`). Owns items (held/sold/assigned, masking, identify DC,
+  history), the coin ledger, trades and party settings. It enforces masking
+  server-side: non-GMs see `mask_label`, and the ref is blanked. It never
+  calls pfsrd2-data-api, and stores ContentRefs opaquely.
+- `party-treasure-web`: player and GM SPA. It renders items with
+  pfsrd2-display's `ItemCard`, masked ones included.
+
+**wyrd** — random generation for TTRPGs
+- Generator plugins. The first is `kenning`, which makes British Isles place
+  names with etymology. API: `GET /api/manifest`, `GET|POST /api/<generator>`.
+  Every response uses the envelope `{result, explanation, components, seed}`.
+- Flask on Lambda (Function URL), reading a bundled SQLite runtime DB, plus a
+  Svelte SPA. Its Terraform lives in `wyrd/terraform` (status: unconfirmed
+  whether that's intentional). It keeps its own beads tracker (intentional).
+- Offline authoring: a lexicon mined from place-name dictionaries and
+  wiktextract. Ollama on Devon's MacBook is used at authoring time only,
+  never on the request path.
+- No other 521 service consumes it yet. encounter-builder-web may later use
+  it for names.
+
+**pfsrd2-display** — React library for stat blocks, item cards and search
+- THE library for displaying and selecting PF2 objects (library-first rule,
+  [encounter-builder-v2.md](../design/encounter-builder-v2.md))
 - Schema-version-aware (V1.2, V1.3/1.4)
-- Template change highlighting via JSON Pointer paths
-- `onRoll` and `onLoadMonster` callbacks for consumer integration
-- Planned: replace lets-roll's built-in rendering, then open-source
+- Change highlighting via JSON Pointer paths
+- Consumers: encounter-builder-web, party-treasure-web. Its own harness is
+  deployed at `display.pfsrd2.staging.521studios.com`. Not yet re-integrated
+  into lets-roll.
 - Repo: `521-studios/pfsrd2-display`
 
 ### In Design
 
 **521-engine** — DAG-based tabletop RPG game engine
+- Design docs only; code is on hold. The session owns its design docs, and
+  Abadar reviews where the engine crosses system boundaries.
+- Decided (Devon, 2026-11-10): stacking rules are data. GM-authored content is
+  declarative only. Vetted compute is compiled at build time and referenced
+  by content-hashed id, with no runtime eval. Template stacking
+  (pfsrd2-data-api `4zx0`) waits for engine Phase 5. See
+  [content-ref.md](content-ref.md).
 - Pure JavaScript, zero dependencies
 - Resolves game state via directed acyclic graph with topological sort
 - `explain()` provides full audit trail for every computed value
@@ -73,27 +125,38 @@ See: [Data Pipeline Architecture](../pipeline/data-pipeline.md)
 
 ## Service Ownership
 
-| Service | Owner | Repo | Org |
-|---------|-------|------|-----|
-| lets-roll | Morgan + Devon | 521-studios/lets-roll | 521-studios |
-| pfsrd2-data-api | Devon | 521-studios/pfsrd2-data-api | 521-studios |
-| pfsrd2-display | Devon | 521-studios/pfsrd2-display | 521-studios |
-| 521-engine | Devon | 521-studios/521-engine | 521-studios |
-| pfsrd2-parser | Devon | devonjones/PFSRD2-Parser | personal |
-| pfsrd2-data | Devon | devonjones/PFSRD2-Data | personal |
-| pfsrd2-web | Devon | devonjones/PFSRD2-Web | MasterworkTools |
-| pfsrd2-automation | Devon | 521-studios/pfsrd2-automation | 521-studios |
-| infra | Devon | 521-studios/infra | 521-studios |
-| infra-frontend | Devon | 521-studios/infra-frontend | 521-studios |
-| tools | Devon | 521-studios/tools | 521-studios |
-| smoke_tests | Devon | 521-studios/smoke_tests | 521-studios |
+Human owner, then the agent session that stewards the repo day to day. The
+live roster is `~/521Studios/TEAM.md`, maintained by `pm-521-studios`. If it
+and this table disagree, trust TEAM.md.
+
+| Service | Owner | Steward session | Repo |
+|---------|-------|-----------------|------|
+| lets-roll | Morgan + Devon | lets-roll | 521-studios/lets-roll |
+| encounter-builder-api | Devon | encounter-builder-api | encounter-builder-api |
+| encounter-builder-web | Devon | encounter-builder-web | encounter-builder-web |
+| party-treasure-api | Devon | party-treasure-api-cf | party-treasure-api |
+| party-treasure-web | Devon | party-treasure-web-ee | party-treasure-web |
+| pfsrd2-data-api | Devon | pfsrd2-data-api | 521-studios/pfsrd2-data-api |
+| pfsrd2-display | Devon | pfsrd2-display | 521-studios/pfsrd2-display |
+| 521-engine | Devon | 521-engine | 521-studios/521-engine |
+| wyrd | Devon | wyrd | wyrd |
+| 521-architect | Devon | 521-architect (Abadar) | 521-architect |
+| pfsrd2-parser | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Parser |
+| pfsrd2-data | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Data |
+| pfsrd2-web | Devon | pm-masterwork-tools (session `pfsrd2`) | devonjones/PFSRD2-Web |
+| pfsrd2-corpus | Devon | pm-masterwork-tools (session `corpus`) | pfsrd2-corpus |
+| pfsrd2-automation | Devon | none yet | 521-studios/pfsrd2-automation |
+| infra | Devon | none yet | 521-studios/infra |
+| infra-frontend | Devon | none yet | 521-studios/infra-frontend |
+| tools | Devon | none yet | 521-studios/tools |
+| smoke_tests | Devon | none yet | 521-studios/smoke_tests |
+
+Coordinate on the pfsrd2-parser/data/web/corpus repos through
+`pm-masterwork-tools`, a separate PM.
 
 ## Agent Fleet
 
-Servitor agents (Pathfinder deity naming convention):
-
-| Agent | Role | Repo |
-|-------|------|------|
-| Iomedae | Fleet commander | servitor |
-| Nethys | API guardian | pfsrd2-data-api |
-| Abadar | System architect | 521-architect |
+`pm-521-studios` is the project manager. It relays to and from Devon and owns
+the `bd_521Studios` beads store. Each worker session stewards the repo listed
+above. Questions and status go to the PM, and workers may talk to each other
+directly.

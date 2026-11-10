@@ -65,6 +65,30 @@ These are live connections between services at runtime.
 
 CloudFront terminates TLS. ALB receives HTTP only.
 
+## Encounter / Treasure Cluster
+
+Each SPA has its own CloudFront edge (infra-frontend `encounter-builder-cf`,
+`party-treasure-cf`). Its own API sits behind it, along with pfsrd2-data-api,
+both through OAC.
+
+| From | To | How |
+|---|---|---|
+| SPAs, sibling APIs | lets-roll OIDC | Bearer JWT (RS256). APIs verify offline after fetching JWKS. Discovery is lazy, so a lets-roll outage gives 401s, not a crash. Behind OAC the bearer travels in `X-Access-Token`, because `Authorization` carries SigV4. |
+| encounter-builder-api, party-treasure-api | lets-roll `GET /api/v1/games/:id` | Caller's bearer forwarded, to decide GM vs member. |
+| encounter-builder-api | party-treasure-api `POST /parties/{id}/releases` | **Server-to-server**, SigV4. Identity is matched exactly against `SERVICE_RELEASE_ROLE_ARN`. Idempotent on the client ULID. |
+| SPAs | pfsrd2-data-api | Same-origin path on each edge. Clients resolve ContentRefs; the APIs never do. |
+| encounter-builder-web | encounter-builder S3 maps bucket | Presigned POST (≤15 MB, png/jpeg/webp, tagged `state=pending` until saved; untagged-on-save, pending expire after 1 day). Served through the encounters edge with uuid keys. Bucket in encounter-builder-api terraform; origin, OAC and bucket policy in infra-frontend. |
+
+ContentRef, the shared shape for "a monster" or "an item", is a
+cross-service contract: [content-ref.md](content-ref.md).
+
+**Divergence from plan.** [encounter-treasure-cluster.md](encounter-treasure-cluster.md)
+§5 planned the release as a browser-driven call, keeping the "browser is the
+integration point" rule. What shipped is a SigV4 service push from
+encounter-builder-api. That is the cluster's one server-to-server edge, and an
+exception to "Shared Nothing" below. No decision recording why it changed has
+been found. Open question for Devon.
+
 ## Build-Time Dependencies
 
 These are consumed during CI/CD or development, not at runtime.
