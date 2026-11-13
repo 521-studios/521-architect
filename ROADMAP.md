@@ -34,7 +34,7 @@ In a module, treasure implies encounters.
 | M2 | `ivqk` | **Agent authoring.** Non-browser GM auth for an agent, a module → encounters skill, and a trial on one real module. Includes `gql1` and the fidelity list below. |
 | M3 | `we5k` | **GM run-time reference view.** Monsters, items and treasure state in one place, built on pfsrd2-display. Includes `we5k.1` and the encounter lifecycle (`we5k.2`). |
 | M4 | `fcu0` | **Prod cut-over** before the next campaign. Includes `pmib`, `chng` and the security gate below. |
-| M5 | `qxlz` | **Auth service** (proposed). One issuer for every app, principals in DynamoDB, then the Rails backend retired piece by piece. Design: [auth-service.md](docs/architecture/auth-service.md). Phase 0 (client credentials in lets-roll's Doorkeeper) lands earlier, in `we5k.2`. |
+| M5 | `qxlz` | **Rails retirement.** The lets-roll backend is retired piece by piece, each piece becoming a Lambda + Dynamo service. It depends on the auth service, which is built now as the `we5k.2.6` fix: build, deploy, migrate every principal, then one cut-over of every app's issuer. Design: [auth-service.md](docs/architecture/auth-service.md). |
 
 **M2 fidelity list** (gaps a real module exposes): `d886` conditional, state-gated and repeatable encounters (the most impactful), `n4ol` fight-or-social resolution branches, `0o77` modifiable creature equipment, `77l2` creature equipment in the treasure total, `kdv8` creatures customised beyond templates, `hzg8` per-instance identity and initiative, `ef41` and `agle` hazards, haunts, traps and afflictions as stat entities, `28se` destructible objects, `vwum` typed exit edges, `72wg` game_id collisions in skills.
 

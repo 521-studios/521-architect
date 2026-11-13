@@ -68,7 +68,7 @@ The service does its own ActionCable broadcasts, so open tables update.
 
 ### lets-roll → EB auth (decided 2026-11-13)
 
-> **Under review.** [auth-service.md](auth-service.md) proposes replacing this, and the `X-EB` proof on the push, with client-credentials JWTs (`we5k.2.6`). This section stands until Devon picks.
+> **Being replaced.** At the auth cut-over, this section and the `X-EB` proof on the push are replaced by client-credentials JWTs from the auth service (Devon, 2026-11-13; see [auth-service.md](auth-service.md)). Until then, kill sync stays dark.
 
 
 This mirrors the push: a presigned STS `GetCallerIdentity` request in `X-LR-Identity`.
