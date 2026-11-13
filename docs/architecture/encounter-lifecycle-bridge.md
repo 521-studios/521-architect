@@ -26,7 +26,7 @@ HP, damage and conditions never flow back to EB.
 
 1. **Prepared.** The GM has built the encounter in EB.
 2. **Executing.** The encounter enters combat either way: lets-roll pulls it (`we5k.2.2`), or EB pushes it to lets-roll (`we5k.2.3`). The GM can drive from either side. An encounter with no combat can skip lets-roll entirely and go straight to complete.
-3. **Kills.** After combat, the creatures killed in lets-roll are recorded on the EB encounter. The GM can also mark creatures killed directly in EB. Kill state syncs both ways (`we5k.2.4`).
+3. **Kills.** After combat, the creatures killed in lets-roll are recorded on the EB encounter. The GM can also mark creatures killed directly in EB. Kill state syncs both ways (`we5k.2.4`); see Kill sync below.
 4. **Complete.** The GM marks the encounter complete in EB and can add close-out notes (`we5k.2.1`).
 5. **Package and release.** The package is the encounter's treasure plus the gear of every killed creature (`77l2`). The GM marks anything that doesn't carry over, such as a quaffed potion or a shattered sword, and can add a note to each item as it's closed out. The GM then releases the package to party-treasure (`we5k.2.5`). The release is the last step of this flow, not a standalone button.
 
@@ -60,14 +60,48 @@ The service does its own ActionCable broadcasts, so open tables update.
 **Re-push syncs (lets-roll's split).** A re-push adds, updates and removes monsters, matched by `eb_monster_key`.
 - EB's data overwrites `name`, `content_ref` and `max_health`. Elite/weak travel inside `content_ref` as template Mods; there is no separate adjustment field.
 - If `max_health` changes, the damage already taken is kept: `health = max(0, new_max - (old_max - old_health))`.
-- Apart from that shift, a re-push never touches `health`, and it never touches `nickname`, `combat_mods` or `initiative`.
+- Apart from that shift, and a kill (below), a re-push never touches `health`, and it never touches `nickname`, `combat_mods` or `initiative`.
 - A monster missing from the payload is kept, and reported in the response, if it is damaged (`health < max_health`), has non-empty `combat_mods`, or is killed (`health <= 0` until `we5k.2.4` adds kill state). Otherwise it is deleted.
 - Monsters arrive without initiative; the GM rolls it.
 - A push is allowed only while the encounter is `prepared` or `executing`.
 
-### Still open
+### lets-roll → EB auth (decided 2026-11-13)
 
-- How lets-roll (Rails on ECS) signs its pull and its kill reports to encounter-builder-api's Function URL. This needs an ECS task role with a grant like `SERVICE_RELEASE_ROLE_ARN`.
+This mirrors the push: a presigned STS `GetCallerIdentity` request in `X-LR-Identity`.
+It covers kill reports and the pull (`we5k.2.2`). For a GET, the body hash is the hash of an empty body.
+encounter-builder-api implements it in `internal/lrident`.
+- The URL must be the exact regional STS endpoint. The method must be POST, and the body exactly `Action=GetCallerIdentity&Version=2011-06-15`.
+- `host`, `x-amz-date`, `x-lr-audience` (`encounter-builder-<env>`) and `x-lr-body-sha256` must all appear in SignedHeaders, not just in the request. The hash is checked against the raw request bytes.
+- `X-Amz-Date` must be within ±5 minutes. That date check is the replay window, since the request is header-signed and has no `X-Amz-Expires`.
+- STS must return `assumed-role/<name>` for `LETS_ROLL_TASK_ROLE_ARN`, in that role's account.
+- The lets-roll identity is accepted only on the lets-roll inbound route group, which sits outside the OIDC group. It is not a credential for anything else under `/api/app/*`.
+- No GM bearer is sent, because lets-roll already authorized the GM who changed HP.
+- The routes answer 503 until `LETS_ROLL_TASK_ROLE_ARN` is set.
+- The EB Lambda has no VPC config, so it has public egress to STS.
+
+The direct Function-URL SigV4 grant was rejected. CloudFront OAC overwrites `Authorization`, so it would have meant calling the Function URL around CloudFront, a second ingress.
+
+## Kill sync (`we5k.2.4`)
+
+**Storage.** EB is the record. `encounter.kills` maps `eb_monster_key` to `{killed, at, source: "eb"|"lets_roll"}`.
+It lives outside `content`, so the GM's full-replace PUT never touches it.
+Keys whose content item or creature count no longer exists are orphans. They stay stored, but the package (`we5k.2.5`), the run view and the web read kills only for keys still present in content.
+
+**Latest wins.** An update applies only if its `at` is newer than the stored `at`. An equal `at` counts as stale. Timestamps are RFC3339 with fractional seconds.
+
+**Marks in EB.** `POST /api/app/campaigns/{campaign}/encounters/{id}/kills` with `{"eb_monster_key","killed"}`, using normal OIDC GM auth.
+The server stamps `at` and sets `source` to `eb`.
+The GM can mark kills until the encounter is released (409 after), so kills can still be corrected while it's complete.
+
+**Reports from lets-roll.** `POST /api/app/campaigns/{game_id}/encounters/{eb_encounter_id}/kill-reports` with `{"kills":[{"eb_monster_key","killed","at"}]}`. The campaign id is the lets-roll game id.
+- `at` is the time of the change in lets-roll. Killed means `health <= 0`, and un-killed means `health > 0` again. lets-roll sends on each crossing of 0.
+- The response is 200, with each key marked `applied`, `stale` or `unknown`. `unknown` means the key isn't a current creature, and nothing is stored for it.
+- An unknown encounter returns 404. Any state other than `executing` returns 409, so a late report can't change a package already built.
+
+**EB to lets-roll.** The combat push carries `"killed": true` on creatures EB has marked killed. lets-roll sets their health to 0 and never deletes a killed monster on re-push; it keys on the flag, not only on HP.
+- That is the one exception to the rule that a re-push never touches `health`.
+- `killed` is omitted when false, and absence means "no instruction". EB never revives a monster in lets-roll; the GM fixes HP there.
+- No separate real-time call is made; a kill travels on the next push.
 
 ## Conflicts
 
