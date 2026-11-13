@@ -91,7 +91,7 @@ These apply to every app. The full text lives in TEAM.md rule 8 and in the PM's 
 
 ## Later
 
-- Decomposing lets-roll.
+- Decomposing lets-roll. This includes moving games, members and characters out of lets-roll, behind either a shared service any app can use, or DynamoDB (`gonf`).
 - 521-engine: conditions and templates.
 - Monster Lab and Treasure Lab.
 - The Quantum Dice Service. A design doc exists at `~/521Studios/quantum-dice-fairness-system.md`; there is no bead yet.
