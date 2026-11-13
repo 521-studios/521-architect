@@ -142,7 +142,14 @@ EB and PT both use `OIDC_ISSUER` as lets-roll's `/api/v1` base URL today.
 - EB uses it in `letsroll.New(issuer)` and in the combat push.
 - PT uses it in `service/internal/api/config.go`.
 
-At the cut-over the issuer stops being lets-roll, so each app adds `LETS_ROLL_URL`, defaulting to `OIDC_ISSUER`, and sets it explicitly before the cut-over.
+The two SPAs do the same with `VITE_OIDC_AUTHORITY`: `encounter-builder-web` and `party-treasure-web` both call `${authority}/api/v1/…` in `src/api/letsroll.js`.
+
+At the cut-over the issuer stops being lets-roll, so after the cut-over these calls would go to the auth service.
+- Each API adds `LETS_ROLL_URL`, defaulting to `OIDC_ISSUER`.
+- Each SPA adds `VITE_LETS_ROLL_URL`, defaulting to the authority.
+- Each app sets the new value explicitly before the cut-over.
+- These changes are backwards compatible, so they can merge ahead of the cut-over date.
+- lets-roll's CORS must keep allowing the SPA origins (it allows `*.521studios.com` today).
 Also at the cut-over, the GM token on the push moves from `Authorization: Bearer` to `X-Access-Token`, so lets-roll's receiving side must accept that header from then on.
 
 ## Availability
