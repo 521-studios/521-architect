@@ -80,15 +80,18 @@ That pick was right for that one call. But Devon's direction makes the issuer's 
 
 - **Service calls use client-credentials JWTs from the configured issuer.** That's Doorkeeper in phase 0 and the auth service in phase 1.
   - Each service has its own client.
-  - Tokens are scoped per route (`eb:kill-report`, `eb:pull`, `lr:eb-push`) and have a short `exp` (5 minutes).
+  - Tokens are scoped per route (`eb:kill-report`, `eb:pull`, `lr:eb-push`).
+  - `exp` is at most 5 minutes. Verifiers allow 30 s of clock skew.
   - The caller caches its token until close to expiry.
+  - **Service audiences are distinct from SPA client ids**, for example `encounter-builder-<env>-svc` versus `encounter-builder-web`. A service token's `sub` is a client id, not a user, and GM routes treat `sub` as the user. So GM routes must never accept a service audience, and service routes must never accept a user audience.
+  - **Headers.** Service tokens always travel in `X-Service-Token` and user tokens in `X-Access-Token`. `Authorization` is never used, because CloudFront OAC overwrites it.
+  - **Secrets.** Each service's client secret lives in Secrets Manager. EB holding one is new. Creating the prod secrets is Devon's.
 - **lets-roll → EB (kill reports, the `.2.2` pull).**
-  - EB verifies locally, with the same verifier it uses for GM tokens.
-  - The token goes in `X-Access-Token`, because CloudFront OAC owns `Authorization`.
-  - EB tells service tokens apart from GM tokens by `aud` and scope, and each route accepts only its own kind.
-- **EB → lets-roll (the push).** The push carries EB's service token and the GM's bearer. lets-roll verifies both locally, then checks GM of the game.
+  - EB verifies locally with a second verifier, separate from the GM one. It requires `aud` = `encounter-builder-<env>-svc` and the route's scope.
+  - The service issuer is configured as `SVC_OIDC_ISSUER`, which defaults to `OIDC_ISSUER`.
+- **EB → lets-roll (the push).** The push carries EB's service token in `X-Service-Token` and the GM's bearer in `X-Access-Token`. lets-roll verifies both locally, then checks GM of the game.
 - **What this fixes.** A forged token fails a local signature check, with no outbound call, so the amplification in `we5k.2.6` is gone.
-  - The verifier must rate-limit JWKS refetches on an unknown `kid` (at most once a minute), or the amplification moves there.
+  - Verifiers must not let an unknown `kid` trigger unbounded JWKS fetches. Either treat it as a plain 401, which is EB's behaviour today with a 15-minute minimum refresh, or refetch at most once a minute.
   - Each forgery still costs one Lambda invocation. Reserved concurrency can cap that if needed.
 - **What it gives up.** A bearer token is not bound to the method, path or body, as the `#12` binding was.
   - Per-route scope plus the 5-minute `exp` limits a stolen token to one kind of call for a few minutes.
@@ -107,7 +110,7 @@ That pick was right for that one call. But Devon's direction makes the issuer's 
 - User access tokens are 15 minutes, so a session lasts at most 15 minutes past the start of an outage.
   - If that's too short for a game night, raise the access TTL.
   - Don't make verification depend on the auth service.
-- Key rotation: publish the new key in the JWKS at least one cache lifetime before signing with it, and keep the old key until its tokens expire.
+- Key rotation: issuers publish a new key in the JWKS at least 15 minutes before signing with it, since EB caches the JWKS for at least 15 minutes. Keep the old key published until every token it signed has expired.
 
 ## Where it sits
 
