@@ -35,28 +35,32 @@ HP, damage and conditions never flow back to EB.
 Both directions are server-to-server, like the existing release push (SigV4; see [service-dependencies.md](service-dependencies.md)).
 This adds two server-to-server edges between encounter-builder-api and lets-roll, after the release push.
 
-### EB → lets-roll push (decided, Devon 2026-11-13)
+### EB → lets-roll push (decided, Devon 2026-11-13; revised after lets-roll's review)
 
 **Endpoint.** `POST /api/v1/games/:id/eb_encounters` returns `201` on create and `200` on a replay or sync (`lets-roll-f6e`).
 It is an upsert on `(game, eb_encounter_id)` through one shared service, `Encounters::ImportFromEb` (`lets-roll-dur`, after `lets-roll-jlm`).
 The pull (`we5k.2.2`) and the push (`we5k.2.3`) both use that service.
+The service does its own ActionCable broadcasts, so open tables update.
 
-**Auth.** lets-roll sits behind an ALB with no IAM authorizer.
-So EB proves its identity with a presigned STS `GetCallerIdentity` request (the Vault IAM-auth pattern):
-- EB sends the presigned request in an `X-EB-Identity` header.
-- The signed headers include `X-EB-Audience` (`lets-roll-<env>`) and `X-EB-Body-SHA256`, which bind the proof to this audience and this payload.
-- lets-roll checks that the URL is the STS endpoint, then checks the audience and the body hash.
-- lets-roll then forwards the request to STS and requires the returned role ARN to equal `EB_LAMBDA_ROLE_ARN`.
-- EB has already checked that the caller is GM. `acting_sub` is sent for audit only.
+**Auth: SigV4 plus the GM's bearer.** A push carries two proofs, and lets-roll checks both.
+- *Service identity.* lets-roll sits behind an ALB with no IAM authorizer, so EB proves its identity with a presigned STS `GetCallerIdentity` request (the Vault IAM-auth pattern).
+  - EB sends the presigned request in an `X-EB-Identity` header.
+  - The signed headers include `X-EB-Audience` (`lets-roll-<env>`) and `X-EB-Body-SHA256`, which bind the proof to this audience and this payload.
+  - lets-roll checks that the URL is the STS endpoint, then checks the audience and the body hash.
+  - lets-roll then forwards the request to STS and requires the returned role ARN to equal `EB_LAMBDA_ROLE_ARN`.
+- *User.* EB also forwards the GM's lets-roll OIDC bearer. lets-roll verifies it and checks that the user is GM of the game.
 
 **Back-link** (`lets-roll-6ru`). These keys are also what kill sync (`we5k.2.4`) matches on.
 - `encounters.eb_encounter_id` is unique per game.
 - `encounter_monsters.eb_monster_key` is `"<EB content item id>:<n>"`, with one row per creature.
+- Both columns have partial unique indexes, which apply only where the column is set, so encounters created in lets-roll itself are unaffected.
 
-**Re-push syncs.** A re-push adds, updates and removes monsters, matched by `eb_monster_key`.
-- HP and state are preserved.
-- A monster that has been damaged or killed is never deleted; the response flags it as kept.
-- If `max_health` changes, the damage already taken is kept.
+**New encounters.** If the name clashes with an existing lets-roll encounter in the game, the new one is named `"Name (EB)"`.
+
+**Re-push syncs (lets-roll's split).** A re-push adds, updates and removes monsters, matched by `eb_monster_key`.
+- EB's data overwrites `name`, `content_ref` and `max_health`. If `max_health` changes, the damage already taken is kept.
+- A re-push never touches `health`, `nickname`, `combat_mods` or `initiative`.
+- A monster removed in EB is deleted only if it is undamaged, carries no mods and wasn't killed. Otherwise lets-roll keeps it, and the response flags it as kept.
 - Monsters arrive without initiative; the GM rolls it.
 - A push is allowed only while the encounter is `prepared` or `executing`.
 

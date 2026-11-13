@@ -92,8 +92,9 @@ validated backend operation" than a browser handoff.
 
 **Planned:** two more server-to-server edges between encounter-builder-api and
 lets-roll. They carry the encounter pull and push, and the kill sync. The push
-is `POST /api/v1/games/:id/eb_encounters`, authenticated with a presigned STS
-`GetCallerIdentity` request, because lets-roll's ALB has no IAM authorizer. See
+is `POST /api/v1/games/:id/eb_encounters`. It carries two proofs: a presigned
+STS `GetCallerIdentity` request, because lets-roll's ALB has no IAM authorizer,
+and the GM's lets-roll bearer, which lets-roll checks for GM of the game. See
 [encounter-lifecycle-bridge.md](encounter-lifecycle-bridge.md) (`we5k.2`).
 
 **Membership's future home.** Games, members and characters live in lets-roll
