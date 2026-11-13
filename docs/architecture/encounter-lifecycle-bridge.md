@@ -35,10 +35,34 @@ HP, damage and conditions never flow back to EB.
 Both directions are server-to-server, like the existing release push (SigV4; see [service-dependencies.md](service-dependencies.md)).
 This adds two server-to-server edges between encounter-builder-api and lets-roll, after the release push.
 
-The beads must still settle these details:
+### EB → lets-roll push (decided, Devon 2026-11-13)
+
+**Endpoint.** `POST /api/v1/games/:id/eb_encounters` returns `201` on create and `200` on a replay or sync (`lets-roll-f6e`).
+It is an upsert on `(game, eb_encounter_id)` through one shared service, `Encounters::ImportFromEb` (`lets-roll-dur`, after `lets-roll-jlm`).
+The pull (`we5k.2.2`) and the push (`we5k.2.3`) both use that service.
+
+**Auth.** lets-roll sits behind an ALB with no IAM authorizer.
+So EB proves its identity with a presigned STS `GetCallerIdentity` request (the Vault IAM-auth pattern):
+- EB sends the presigned request in an `X-EB-Identity` header.
+- The signed headers include `X-EB-Audience` (`lets-roll-<env>`) and `X-EB-Body-SHA256`, which bind the proof to this audience and this payload.
+- lets-roll checks that the URL is the STS endpoint, then checks the audience and the body hash.
+- lets-roll then forwards the request to STS and requires the returned role ARN to equal `EB_LAMBDA_ROLE_ARN`.
+- EB has already checked that the caller is GM. `acting_sub` is sent for audit only.
+
+**Back-link** (`lets-roll-6ru`). These keys are also what kill sync (`we5k.2.4`) matches on.
+- `encounters.eb_encounter_id` is unique per game.
+- `encounter_monsters.eb_monster_key` is `"<EB content item id>:<n>"`, with one row per creature.
+
+**Re-push syncs.** A re-push adds, updates and removes monsters, matched by `eb_monster_key`.
+- HP and state are preserved.
+- A monster that has been damaged or killed is never deleted; the response flags it as kept.
+- If `max_health` changes, the damage already taken is kept.
+- Monsters arrive without initiative; the GM rolls it.
+- A push is allowed only while the encounter is `prepared` or `executing`.
+
+### Still open
+
 - How lets-roll (Rails on ECS) signs its pull and its kill reports to encounter-builder-api's Function URL. This needs an ECS task role with a grant like `SERVICE_RELEASE_ROLE_ARN`.
-- How encounter-builder-api authenticates its push into lets-roll. lets-roll does not verify SigV4 today.
-- How lets-roll links each of its `encounter_monsters` rows back to the EB encounter and monster, so kills can be matched.
 
 ## Conflicts
 

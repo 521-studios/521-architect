@@ -91,8 +91,15 @@ moving treasure into a party is "easier to be secure if it's a tested and
 validated backend operation" than a browser handoff.
 
 **Planned:** two more server-to-server edges between encounter-builder-api and
-lets-roll. They carry the encounter pull and push, and the kill sync. See
+lets-roll. They carry the encounter pull and push, and the kill sync. The push
+is `POST /api/v1/games/:id/eb_encounters`, authenticated with a presigned STS
+`GetCallerIdentity` request, because lets-roll's ALB has no IAM authorizer. See
 [encounter-lifecycle-bridge.md](encounter-lifecycle-bridge.md) (`we5k.2`).
+
+**Membership's future home.** Games, members and characters live in lets-roll
+today. party-treasure-api reads them from lets-roll `/games/:id/members`
+(`fcu0.2`). They are to move out of lets-roll, behind either a shared service
+any app can use, or DynamoDB (Devon, 2026-11-11; `gonf`, Later).
 
 ## Build-Time Dependencies
 
