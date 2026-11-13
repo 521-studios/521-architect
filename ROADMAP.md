@@ -37,7 +37,7 @@ In a module, treasure implies encounters.
 
 **M2 fidelity list** (gaps a real module exposes): `d886` conditional, state-gated and repeatable encounters (the most impactful), `n4ol` fight-or-social resolution branches, `0o77` modifiable creature equipment, `77l2` creature equipment in the treasure total, `kdv8` creatures customised beyond templates, `hzg8` per-instance identity and initiative, `ef41` and `agle` hazards, haunts, traps and afflictions as stat entities, `28se` destructible objects, `vwum` typed exit edges, `72wg` game_id collisions in skills.
 
-**M4 security gate** (closed before prod): `swkv` ECS role reads any secret, `cds4` staging GM password in git history, `wti5` a `--type` build wipes the prod index, `bwbz` stray directories indexed into prod S3, `fcu0.1` plaintext admin token in fleet-reference.md, and the player privacy leaks `lets-roll-7aj`, `lets-roll-cd1` and `lets-roll-yaa`.
+**M4 security gate** (closed before prod): `swkv` ECS role reads any secret, `cds4` staging GM password in git history, `wti5` a `--type` build wipes the prod index, `bwbz` stray directories indexed into prod S3, `fcu0.1` plaintext admin token in fleet-reference.md, `we5k.2.6` STS-replay rate limit before the lets-roll role ARN goes live, and the player privacy leaks `lets-roll-7aj`, `lets-roll-cd1` and `lets-roll-yaa`.
 
 ### Encounter lifecycle (M3, `we5k.2`)
 
