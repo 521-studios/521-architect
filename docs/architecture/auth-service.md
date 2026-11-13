@@ -131,10 +131,32 @@ This is a deliberate exception to the cluster's OAC-everywhere pattern.
 2. **Origin verify.** CloudFront sends a secret `X-Origin-Verify` header. The app rejects any request without it, with a constant-time compare, before doing anything else. The value lives in Secrets Manager, and the prod value is Devon's.
 3. **Brute-force protection before prod.**
    - Throttle failed sign-ins and failed client auth per account, client and IP, using DynamoDB counters with a TTL.
-   - A WAF rate rule on `/token` and the sign-in page is recommended on top. It costs about $6/mo per env, and the cost is Devon's call.
-4. **Reserved concurrency** on the Lambda caps what a flood can cost.
+   - Client secrets are 256-bit random, but failed client auth is throttled too.
+   - **No WAF for now** (Devon, 2026-11-13). App throttling plus reserved concurrency is the protection. A WAF rate rule on `/token` and the sign-in page (about $6/mo per env) stays the option if abuse shows up.
+4. **Reserved concurrency** on the Lambda caps what a flood can cost. It is set to 10.
 5. **Standards as written.** Support `client_secret_basic` and `client_secret_post`, and accept Bearer in `Authorization` on userinfo.
 6. **Resource servers keep OAC.** EB, PT and lets-roll are unchanged, so tokens still travel in `X-Service-Token` and `X-Access-Token` there.
+
+**Status.** auth-service PR1 implements conditions 1, 2, 4 and 5; a missing origin-verify secret is a fatal startup error. Condition 3 lands in PR2 with sign-in, before prod.
+
+## Client contract (521-auth, 2026-11-13)
+
+What clients (EB, PT, lets-roll) build against. 521-auth owns it.
+
+- **Endpoints.** Take `token_endpoint` from discovery (`<issuer>/oauth/token`). JWKS is at `<issuer>/keys`.
+- **Client auth.** `client_secret_basic` or `client_secret_post`.
+- **Audience comes from scope.** The scope prefix picks the service: `eb:*` → `encounter-builder-<env>-svc`, `lr:*` → `lets-roll-<env>-svc`.
+  - One service per token. A client may request only the scopes it is registered for.
+  - There is no `resource` or `audience` parameter.
+- **Client ids** are `<service>-<env>`, for example `encounter-builder-staging`. Audiences end in `-svc`, so they never collide with SPA client ids.
+- **Claims.**
+  - `iss`: exact match, no trailing slash.
+  - `aud`: a one-element array.
+  - `scope`: a space-delimited string (RFC 9068).
+  - `sub` and `client_id`: both the client id.
+  - `jti`, `iat`, `nbf`, and `exp` = `iat` + 5 minutes.
+- **Header.** RS256, `typ: JWT` (zitadel's default, not `at+jwt`), `kid` = the key's RFC 7638 thumbprint.
+- **Secrets.** JSON `{client_id, client_secret}` in Secrets Manager at `auth-service/<env>/clients/<client_id>`. 521-auth creates staging's; prod's are Devon's.
 
 ## Issuer is not the lets-roll API
 
