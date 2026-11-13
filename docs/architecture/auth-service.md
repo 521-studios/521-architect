@@ -58,8 +58,8 @@ Four steps, with one cut-over. There is no interim issuer, no dual-write and no 
    - Authorization code with PKCE and refresh tokens, for the SPAs and lets-roll.
    - Client credentials, for service clients.
    - A sign-in page and password reset (email through SES).
-   - Impersonation as token exchange, because lets-roll's support impersonation has to keep working after the cut-over.
    - Agent auth for M2 (the device grant) can follow after the cut-over.
+   - Impersonation is **not** part of the cut-over (Devon, 2026-11-13). See [Impersonation](#impersonation-after-the-cut-over).
 2. **Deploy** it alongside the existing apps. Nothing points at it yet.
    - Its issuer URL is fixed from day one (`https://auth.<env domain>`), because every token carries it.
 3. **Migrate** every principal: lets-roll user ids (as `sub`), emails and bcrypt hashes. Register every app and service client.
@@ -210,11 +210,25 @@ Also at the cut-over, the GM token on the push moves from `Authorization: Bearer
 - **The prod migration**: exporting lets-roll's users (ids, emails, bcrypt hashes) from the prod database into Dynamo. It handles credentials, so it's Devon's to run or approve.
 - **The cut-over window**: pick it, and confirm the game-night rule before Doorkeeper is removed.
 
+## Impersonation after the cut-over
+
+**At the cut-over, lets-roll keeps its own app-level impersonation.**
+- `current_user` stays the impersonator. The `Impersonation` table (character-scoped, 8-hour expiry) and the `impersonator` user role live in lets-roll's Postgres. They drive both the controllers and the GameChannel.
+- So it keeps working once `users.principal_id` maps the token's `sub`.
+- EB and PT have no impersonation today.
+
+**Later: token exchange** (`bd_521Studios-cy73.10`, P3, after the cut-over). This lets support impersonate in every app, not just lets-roll. It uses RFC 8693 with an `act` claim. `zitadel/oidc` provides `op.TokenExchangeStorage`, but the store implements none of it yet. 521-architect will write the design. Its open points:
+- Who may impersonate: a role on the principal, or a grant per app.
+- The shape of the `act` claim.
+- The TTL.
+- The audit trail.
+- How apps show that someone is impersonating.
+
 ## Rails retirement order
 
 Pieces leave in order of how many apps consume them (the extraction rule) and how risky they are.
 
-1. **Auth and principals** (this doc). Impersonation moves with it, as token exchange in the auth service.
+1. **Auth and principals** (this doc). lets-roll's impersonation stays in lets-roll until token exchange (`cy73.10`) replaces it.
 2. **Games and membership** (`gonf`). EB and PT both read them (`fcu0.2`), so there are several consumers.
 3. **Quantum dice.** It's standalone, and a design exists (`~/521Studios/quantum-dice-fairness-system.md`).
 4. **Characters, shortcuts and variables.**
