@@ -48,19 +48,20 @@ The service does its own ActionCable broadcasts, so open tables update.
   - The signed headers include `X-EB-Audience` (`lets-roll-<env>`) and `X-EB-Body-SHA256`, which bind the proof to this audience and this payload.
   - lets-roll checks that the URL is the STS endpoint, then checks the audience and the body hash.
   - lets-roll then forwards the request to STS and requires the returned role ARN to equal `EB_LAMBDA_ROLE_ARN`.
-- *User.* EB also forwards the GM's lets-roll OIDC bearer. lets-roll verifies it and checks that the user is GM of the game.
+- *User.* EB also forwards the GM's lets-roll OIDC bearer. lets-roll verifies it and requires `current_user` to be GM of game `:id` (`game.user_id`, or a GM `game_role`). The bearer identifies the user, so no separate `acting_sub` is sent.
 
 **Back-link** (`lets-roll-6ru`). These keys are also what kill sync (`we5k.2.4`) matches on.
 - `encounters.eb_encounter_id` is unique per game.
 - `encounter_monsters.eb_monster_key` is `"<EB content item id>:<n>"`, with one row per creature.
 - Both columns have partial unique indexes, which apply only where the column is set, so encounters created in lets-roll itself are unaffected.
 
-**New encounters.** If the name clashes with an existing lets-roll encounter in the game, the new one is named `"Name (EB)"`.
+**Matching and names.** lets-roll matches on `eb_encounter_id` first. A new encounter whose name is already taken in the game is named `"Name (EB)"`.
 
 **Re-push syncs (lets-roll's split).** A re-push adds, updates and removes monsters, matched by `eb_monster_key`.
-- EB's data overwrites `name`, `content_ref` and `max_health`. If `max_health` changes, the damage already taken is kept.
-- A re-push never touches `health`, `nickname`, `combat_mods` or `initiative`.
-- A monster removed in EB is deleted only if it is undamaged, carries no mods and wasn't killed. Otherwise lets-roll keeps it, and the response flags it as kept.
+- EB's data overwrites `name`, `content_ref` and `max_health`. Elite/weak travel inside `content_ref` as template Mods; there is no separate adjustment field.
+- If `max_health` changes, the damage already taken is kept: `health = max(0, new_max - (old_max - old_health))`.
+- Apart from that shift, a re-push never touches `health`, and it never touches `nickname`, `combat_mods` or `initiative`.
+- A monster missing from the payload is kept, and reported in the response, if it is damaged (`health < max_health`), has non-empty `combat_mods`, or is killed (`health <= 0` until `we5k.2.4` adds kill state). Otherwise it is deleted.
 - Monsters arrive without initiative; the GM rolls it.
 - A push is allowed only while the encounter is `prepared` or `executing`.
 
