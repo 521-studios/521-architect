@@ -115,6 +115,43 @@ This replaces both the X-LR-Identity STS proof and 521-architect's earlier IAM s
   - The lets-roll→EB client becomes "fetch a client-credentials token, send it".
 - **Timing.** Kill sync stays dark until the cut-over.
 
+## Edge (ruled 2026-11-13)
+
+The auth service's Function URL uses `authorization_type = NONE` with no OAC, and sits behind CloudFront.
+This is a deliberate exception to the cluster's OAC-everywhere pattern.
+
+**Why OAC doesn't fit an IdP.** With OAC in front of a Lambda Function URL, every POST and PUT must carry `x-amz-content-sha256` of its body, because CloudFront doesn't compute it.
+- Standard OAuth clients POSTing to `/token` don't send that header.
+- A browser's HTML sign-in form can't send it at all.
+- OAC also overwrites `Authorization`, which breaks `client_secret_basic` and Bearer on userinfo, but the body-hash rule alone rules it out.
+
+**Conditions:**
+1. **CloudFront stays in front.** The issuer is the custom domain `https://auth.<env domain>`, fixed from day one.
+   - The raw Function URL host is never the issuer, never appears in discovery, and is never given to clients.
+2. **Origin verify.** CloudFront sends a secret `X-Origin-Verify` header. The app rejects any request without it, with a constant-time compare, before doing anything else. The value lives in Secrets Manager, and the prod value is Devon's.
+3. **Brute-force protection before prod.**
+   - Throttle failed sign-ins and failed client auth per account, client and IP, using DynamoDB counters with a TTL.
+   - A WAF rate rule on `/token` and the sign-in page is recommended on top. It costs about $6/mo per env, and the cost is Devon's call.
+4. **Reserved concurrency** on the Lambda caps what a flood can cost.
+5. **Standards as written.** Support `client_secret_basic` and `client_secret_post`, and accept Bearer in `Authorization` on userinfo.
+6. **Resource servers keep OAC.** EB, PT and lets-roll are unchanged, so tokens still travel in `X-Service-Token` and `X-Access-Token` there.
+
+## Issuer is not the lets-roll API
+
+EB and PT both use `OIDC_ISSUER` as lets-roll's `/api/v1` base URL today.
+- EB uses it in `letsroll.New(issuer)` and in the combat push.
+- PT uses it in `service/internal/api/config.go`.
+
+The two SPAs do the same with `VITE_OIDC_AUTHORITY`: `encounter-builder-web` and `party-treasure-web` both call `${authority}/api/v1/…` in `src/api/letsroll.js`.
+
+At the cut-over the issuer stops being lets-roll, so after the cut-over these calls would go to the auth service.
+- Each API adds `LETS_ROLL_URL`, defaulting to `OIDC_ISSUER`.
+- Each SPA adds `VITE_LETS_ROLL_URL`, defaulting to the authority.
+- Each app sets the new value explicitly before the cut-over.
+- These changes are backwards compatible, so they can merge ahead of the cut-over date.
+- lets-roll's CORS must keep allowing the SPA origins (it allows `*.521studios.com` today).
+Also at the cut-over, the GM token on the push moves from `Authorization: Bearer` to `X-Access-Token`, so lets-roll's receiving side must accept that header from then on.
+
 ## Availability
 
 - An auth outage blocks sign-in and refresh. It does not block verification of tokens already issued.
