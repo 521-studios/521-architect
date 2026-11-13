@@ -68,6 +68,9 @@ The service does its own ActionCable broadcasts, so open tables update.
 
 ### lets-roll → EB auth (decided 2026-11-13)
 
+> **Being replaced.** At the auth cut-over, this section and the `X-EB` proof on the push are replaced by client-credentials JWTs from the auth service (Devon, 2026-11-13; see [auth-service.md](auth-service.md)). Until then, kill sync stays dark.
+
+
 This mirrors the push: a presigned STS `GetCallerIdentity` request in `X-LR-Identity`.
 It covers kill reports and the pull (`we5k.2.2`). For a GET, the body hash is the hash of an empty body.
 encounter-builder-api implements it in `internal/lrident`.
