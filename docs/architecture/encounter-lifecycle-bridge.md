@@ -48,6 +48,7 @@ The service does its own ActionCable broadcasts, so open tables update.
   - The signed headers include `X-EB-Audience` (`lets-roll-<env>`) and `X-EB-Body-SHA256`, which bind the proof to this audience and this payload.
   - lets-roll checks that the URL is the STS endpoint, then checks the audience and the body hash.
   - lets-roll then forwards the request to STS and requires the returned role ARN to equal `EB_LAMBDA_ROLE_ARN`.
+  - Required with `we5k.2.2`: the proof also signs `X-EB-Method` and `X-EB-Path` (see the request binding below).
 - *User.* EB also forwards the GM's lets-roll OIDC bearer. lets-roll verifies it and requires `current_user` to be GM of game `:id` (`game.user_id`, or a GM `game_role`). The bearer identifies the user, so no separate `acting_sub` is sent.
 
 **Back-link** (`lets-roll-6ru`). These keys are also what kill sync (`we5k.2.4`) matches on.
@@ -76,6 +77,11 @@ encounter-builder-api implements it in `internal/lrident`.
 - STS must return `assumed-role/<name>` for `LETS_ROLL_TASK_ROLE_ARN`, in that role's account.
 - The lets-roll identity is accepted only on the lets-roll inbound route group, which sits outside the OIDC group. It is not a credential for anything else under `/api/app/*`.
 - No GM bearer is sent, because lets-roll already authorized the GM who changed HP.
+- **Request binding (required with `we5k.2.2`).** The proof also signs `X-LR-Method` and `X-LR-Path`, and EB rejects a request whose actual method or path differs.
+  - `X-LR-Path` is the path plus the query string, exactly as encounter-builder-api sees it.
+  - Without this, an empty-body GET's body hash is a constant, so a proof captured in the 5-minute window would work on any lets-roll identity GET route.
+  - The EB→lets-roll push signs `X-EB-Method` and `X-EB-Path` the same way, so a body can't be replayed to another route.
+- **Before the role ARN is set in prod:** an unauthenticated caller can force one STS call per request, so EB needs a rate limit or failure cache first (`we5k.2.6`).
 - The routes answer 503 until `LETS_ROLL_TASK_ROLE_ARN` is set.
 - The EB Lambda has no VPC config, so it has public egress to STS.
 
